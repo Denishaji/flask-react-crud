@@ -1,13 +1,17 @@
+import os
 from flask import Flask, request, jsonify, send_from_directory
 import sqlite3
 from flask_cors import CORS
-import os
 
-# Flask app configured to serve React production build from 'dist' folder
-app = Flask(__name__, static_folder="dist", template_folder="dist")
+# Define absolute path to the dist folder (React build)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DIST_DIR = os.path.join(BASE_DIR, 'dist')
+
+# Configure Flask to use the dist directory
+app = Flask(__name__, static_folder=DIST_DIR, template_folder=DIST_DIR)
 CORS(app)
 
-# Route to initialize the database
+# Route to initialize the SQLite database
 @app.route('/init', methods=['GET'])
 def create_database():
     conn = sqlite3.connect('mydatabase.db')
@@ -79,12 +83,13 @@ def delete_user(user_id):
     conn.close()
     return jsonify({'message': 'User deleted successfully'})
 
-# Serve the React frontend
+# Route to serve React frontend
 @app.route('/')
 @app.route('/<path:path>')
 def serve_react(path='index.html'):
     return send_from_directory(app.template_folder, path)
 
-# Run the app
+# Start the server
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
